@@ -46,3 +46,5 @@ Max is deployed on Vercel from this repository, and every push redeploys it. Set
 - `ANTHROPIC_API_KEY`: your Claude API key
 - `MAX_PASSWORD`: the password for logging in to Max
 - `BLOB_READ_WRITE_TOKEN`: set automatically when the Vercel Blob store is connected
+
+On Netlify, set `MAX_STORAGE=netlify` instead of the Blob token, and Max stores its data in Netlify Blobs.

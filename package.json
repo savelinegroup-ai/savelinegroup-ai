@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
+    "@netlify/blobs": "^11.1.4",
     "@vercel/blob": "^2.8.2",
     "next": "^16.4.2",
     "react": "^19.3.1",

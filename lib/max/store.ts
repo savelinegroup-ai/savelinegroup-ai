@@ -1,17 +1,23 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
+import { getStore } from "@netlify/blobs";
 import { get, put } from "@vercel/blob";
 import type Anthropic from "@anthropic-ai/sdk";
 
-// JSON storage. When a Vercel Blob store is connected (BLOB_READ_WRITE_TOKEN is
-// set), data lives in private blobs so it survives serverless restarts.
+// JSON storage. Online, data lives in Netlify Blobs (MAX_STORAGE=netlify) or
+// Vercel Blob (BLOB_READ_WRITE_TOKEN set) so it survives serverless restarts.
 // Otherwise it falls back to local files in MAX_DATA_DIR for development.
 
 const DATA_DIR = path.resolve(/*turbopackIgnore: true*/ process.env.MAX_DATA_DIR ?? "./data");
+const useNetlify = () => process.env.MAX_STORAGE === "netlify";
 const useBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+const netlifyStore = () => getStore({ name: "max", consistency: "strong" });
 
 async function readJson<T>(name: string): Promise<T | undefined> {
+  if (useNetlify()) {
+    return ((await netlifyStore().get(name, { type: "json" })) as T | null) ?? undefined;
+  }
   if (useBlob()) {
     const result = await get(name, { access: "private", useCache: false });
     if (!result?.stream) return undefined;
@@ -27,6 +33,10 @@ async function readJson<T>(name: string): Promise<T | undefined> {
 
 async function writeJson(name: string, data: unknown) {
   const body = JSON.stringify(data);
+  if (useNetlify()) {
+    await netlifyStore().set(name, body);
+    return;
+  }
   if (useBlob()) {
     await put(name, body, {
       access: "private",

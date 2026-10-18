@@ -1,9 +1,11 @@
 import { runMax } from "@/lib/max/agent";
+import { isAuthed, unauthorized } from "@/lib/max/auth";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function POST(req: Request) {
+  if (!isAuthed(req)) return unauthorized();
   const { conversationId, message } = await req.json();
   if (typeof conversationId !== "string" || typeof message !== "string" || !message.trim()) {
     return Response.json({ error: "conversationId and message are required" }, { status: 400 });

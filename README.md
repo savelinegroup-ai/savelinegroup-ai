@@ -32,12 +32,17 @@ Open http://localhost:3000. Some things to try:
 | `lib/max/prompt.ts` | Max's personality and how Max works. Edit this to change Max's behavior. |
 | `lib/max/tools.ts` | What Max can do: create, list, update, and delete tasks; add and list team members; remember and forget facts. |
 | `lib/max/agent.ts` | The agent loop. It uses the SDK tool runner, streams the reply, and handles refusals and fallbacks. |
-| `lib/max/store.ts` | JSON-file storage in `./data` for the board, team, memories, and conversations. |
+| `lib/max/store.ts` | JSON storage for the board, team, memories, and conversations. It uses Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set, and local files in `./data` otherwise. |
 | `app/api/chat/route.ts` | Streams Max's replies to the browser as NDJSON. |
+| `lib/max/auth.ts` | Password login. Set `MAX_PASSWORD` to turn it on. |
 | `app/page.tsx` | The chat UI, with a live sidebar showing the task board. |
 
 To give Max a new ability, add a `betaZodTool` to `lib/max/tools.ts`, for example sending email or reading your calendar.
 
 ## Deploying
 
-The JSON-file store suits one person running Max locally. Serverless hosts like Vercel wipe their filesystem between runs, so replace `lib/max/store.ts` with a real database (Postgres, Supabase, etc.) before deploying. Also add authentication, because anyone with the URL could otherwise talk to Max and spend your API credits.
+Max is deployed on Vercel from this repository, and every push redeploys it. Set these environment variables on the Vercel project:
+
+- `ANTHROPIC_API_KEY`: your Claude API key
+- `MAX_PASSWORD`: the password for logging in to Max
+- `BLOB_READ_WRITE_TOKEN`: set automatically when the Vercel Blob store is connected

@@ -45,11 +45,13 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [board, setBoard] = useState<Board | null>(null);
+  const [locked, setLocked] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
 
   const refreshBoard = useCallback(async () => {
     const res = await fetch("/api/board");
-    if (res.ok) setBoard(await res.json());
+    if (res.status === 401) setLocked(true);
+    else if (res.ok) setBoard(await res.json());
   }, []);
 
   useEffect(() => {
@@ -73,6 +75,10 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversationId, message: text }),
       });
+      if (res.status === 401) {
+        setLocked(true);
+        return;
+      }
       if (!res.ok || !res.body) throw new Error(`Request failed (${res.status})`);
 
       const reader = res.body.getReader();
@@ -115,6 +121,18 @@ export default function Home() {
   }
 
   const openTasks = board?.tasks.filter((t) => t.status !== "done") ?? [];
+
+  if (locked) {
+    return (
+      <Login
+        onSuccess={() => {
+          setLocked(false);
+          setItems([]);
+          refreshBoard();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="app">
@@ -224,6 +242,43 @@ export default function Home() {
           <p className="none">Tell Max who&apos;s on your team.</p>
         )}
       </aside>
+    </div>
+  );
+}
+
+function Login({ onSuccess }: { onSuccess: () => void }) {
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    if (res.ok) onSuccess();
+    else setError("Wrong password. Try again.");
+  }
+
+  return (
+    <div className="login">
+      <form onSubmit={submit}>
+        <div className="avatar">M</div>
+        <h1>Max</h1>
+        <p>Enter your password to continue.</p>
+        <input
+          type="password"
+          value={password}
+          autoFocus
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {error && <div className="error">{error}</div>}
+        <button className="primary" type="submit" disabled={!password}>
+          Log in
+        </button>
+      </form>
     </div>
   );
 }

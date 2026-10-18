@@ -58,3 +58,11 @@ Max answers the `/max <message>` command in any channel of your server, using th
 3. In the developer portal, set **Interactions Endpoint URL** to `https://<your-max-site>/api/discord` and save.
 4. Invite the app to your server: on **OAuth2 → URL Generator**, tick `applications.commands`, then open the generated URL.
 5. Log in to Max on the web, then visit `https://<your-max-site>/api/discord/register` once to add the commands.
+
+## Morning phone call
+
+Every morning Max calls `MAX_OWNER_PHONE` through Twilio and reads a short briefing. Then Max listens, so you can ask questions or give instructions by voice ("move the campaign to Friday"). Say "that's all" or "bye" to hang up. The **📞 Call me now** button in the web app places the same call on demand.
+
+- The schedule is in `vercel.json` and uses UTC: `0 12 * * *` is noon UTC, which is 8 AM Eastern in summer. On the Vercel Hobby plan the call comes at some point within that hour.
+- Set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`, `MAX_OWNER_PHONE`, `MAX_PUBLIC_URL`, and `CRON_SECRET` in the hosting environment.
+- Twilio's requests are checked against `X-Twilio-Signature`, so only Twilio can drive a call.

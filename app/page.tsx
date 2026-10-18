@@ -46,6 +46,7 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [board, setBoard] = useState<Board | null>(null);
   const [locked, setLocked] = useState(false);
+  const [calling, setCalling] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
 
   const refreshBoard = useCallback(async () => {
@@ -120,6 +121,23 @@ export default function Home() {
     }
   }
 
+  async function callMe() {
+    setCalling(true);
+    try {
+      const res = await fetch("/api/voice/call", { method: "POST" });
+      if (res.status === 401) return setLocked(true);
+      const data = await res.json();
+      setItems((prev) => [
+        ...prev,
+        res.ok
+          ? { kind: "tool", name: "Max is calling your phone" }
+          : { kind: "error", text: `Couldn't call: ${data.error}` },
+      ]);
+    } finally {
+      setCalling(false);
+    }
+  }
+
   const openTasks = board?.tasks.filter((t) => t.status !== "done") ?? [];
 
   if (locked) {
@@ -143,7 +161,11 @@ export default function Home() {
             <h1>Max</h1>
             <p>{busy ? "Working…" : "Your AI manager"}</p>
           </div>
+          <button onClick={callMe} disabled={calling}>
+            {calling ? "Calling…" : "📞 Call me now"}
+          </button>
           <button
+            className="new-chat"
             onClick={() => {
               setItems([]);
               setConversationId(newConversationId());

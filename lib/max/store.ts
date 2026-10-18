@@ -14,7 +14,7 @@ const useNetlify = () => process.env.MAX_STORAGE === "netlify";
 const useBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 const netlifyStore = () => getStore({ name: "max", consistency: "strong" });
 
-async function readJson<T>(name: string): Promise<T | undefined> {
+export async function readJson<T>(name: string): Promise<T | undefined> {
   if (useNetlify()) {
     return ((await netlifyStore().get(name, { type: "json" })) as T | null) ?? undefined;
   }
@@ -31,7 +31,7 @@ async function readJson<T>(name: string): Promise<T | undefined> {
   }
 }
 
-async function writeJson(name: string, data: unknown) {
+export async function writeJson(name: string, data: unknown) {
   const body = JSON.stringify(data);
   if (useNetlify()) {
     await netlifyStore().set(name, body);

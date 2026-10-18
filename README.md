@@ -48,3 +48,13 @@ Max is deployed on Vercel from this repository, and every push redeploys it. Set
 - `BLOB_READ_WRITE_TOKEN`: set automatically when the Vercel Blob store is connected
 
 On Netlify, set `MAX_STORAGE=netlify` instead of the Blob token, and Max stores its data in Netlify Blobs.
+
+## Discord
+
+Max answers the `/max <message>` command in any channel of your server, using the same board, team, and memory as the web app. Each channel keeps its own conversation, and `/maxreset` starts a fresh one in the current channel.
+
+1. Create an application at https://discord.com/developers/applications. Copy its **Application ID** and **Public Key**, then open the **Bot** page and copy the **Token**.
+2. Add `DISCORD_APPLICATION_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`, and `DISCORD_ALLOWED_USER_IDS` (your Discord user ID) to the hosting environment, then redeploy.
+3. In the developer portal, set **Interactions Endpoint URL** to `https://<your-max-site>/api/discord` and save.
+4. Invite the app to your server: on **OAuth2 → URL Generator**, tick `applications.commands`, then open the generated URL.
+5. Log in to Max on the web, then visit `https://<your-max-site>/api/discord/register` once to add the commands.
